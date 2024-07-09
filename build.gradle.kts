@@ -111,10 +111,6 @@ centralPortal {
     }
 }
 
-tasks.jar {
-    enabled = true
-    archiveClassifier.set("")
-}
 
 
 tasks.withType<Test> {
