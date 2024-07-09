@@ -60,6 +60,15 @@ dependencies {
 //    kapt("org.springframework.boot:spring-boot-autoconfigure-processor")
 //    kapt("org.springframework.boot:spring-boot-configuration-processor")
 }
+val javadocJar =
+    tasks.named<Jar>("javadocJar") {
+        from(tasks.named("dokkaJavadoc"))
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
+tasks.getByName<Jar>("jar") {
+    enabled = true
+    archiveClassifier = ""
+}
 
 
 kotlin {
