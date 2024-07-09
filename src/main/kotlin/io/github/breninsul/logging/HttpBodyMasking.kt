@@ -31,7 +31,7 @@ open class HttpRegexJsonBodyMasking(
         if (message == null) {
             return emptyBody
         }
-        val ranges = regex.findAll(message).map { it.groups[2]!!.range }
+        val ranges = regex.findAll(message).map { it.groups[2]!!.range }.sortedBy { it.last*-1 }
 
         val maskedMessage = StringBuilder(message)
         ranges.forEach { range ->
@@ -54,7 +54,7 @@ open class HttpRegexFormUrlencodedBodyMasking(
         if (message == null) {
             return emptyBody
         }
-        val ranges = regex.findAll(message).map { it.groups[3]!!.range }
+        val ranges = regex.findAll(message).map { it.groups[3]!!.range }.sortedBy { it.last*-1 }
 
         val maskedMessage = StringBuilder(message)
         ranges.forEach { range ->
