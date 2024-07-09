@@ -40,7 +40,7 @@ import java.util.logging.Logger
  */
 open class HttpLoggingHelper(
     protected open val name:String,
-    protected open val properties: HttpLoggerProperties,
+    protected open val properties: HttpLoggingProperties,
     protected open val requestBodyMaskers: List<HttpRequestBodyMasking>,
     protected open val responseBodyMaskers: List<HttpResponseBodyMasking>,
     protected open val logger: Logger = Logger.getLogger(HttpLoggingHelper::class.java.name),
@@ -224,7 +224,7 @@ open class HttpLoggingHelper(
      *
      * @return The log settings for the type.
      */
-    protected open fun Type.properties(): HttpLoggerProperties.LogSettings {
+    protected open fun Type.properties(): HttpLogSettings {
         return when (this) {
             Type.REQUEST -> properties.request
             Type.RESPONSE -> properties.response
