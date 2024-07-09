@@ -30,6 +30,7 @@ plugins {
     id("net.thebugmc.gradle.sonatype-central-portal-publisher") version "1.2.3"
     id("io.spring.dependency-management") version "1.1.5"
     id("org.jetbrains.kotlin.jvm") version kotlinVersion
+    id("org.jetbrains.dokka") version "1.9.20"
 }
 
 val kotlinVersion = "2.0.0"
