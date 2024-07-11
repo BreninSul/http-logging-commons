@@ -15,5 +15,6 @@ open class HttpLogSettings(
     var tookTimeIncluded: Boolean = true,
     var headersIncluded: Boolean = true,
     var bodyIncluded: Boolean = true,
+    var maxBodySize: Int = Int.MAX_VALUE,
     var mask: HttpMaskSettings = HttpMaskSettings(),
 ) 
