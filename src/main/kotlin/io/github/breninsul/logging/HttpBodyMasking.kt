@@ -25,7 +25,7 @@ open class HttpRegexJsonBodyMasking(
     protected open val maskedBody: String = "<MASKED>"
 
     protected open val fieldsGroup get() = fields.joinToString("|")
-    protected open val regex: Regex = "\"($fieldsGroup)\":\"((\\\\\"|[^\"])*)\"".toRegex()
+    protected open val regex: Regex = "\"($fieldsGroup)\"\\s*:\\s*\"((\\\\\"|[^\"])*)\"".toRegex()
 
     override fun mask(message: String?): String {
         if (message == null) {
