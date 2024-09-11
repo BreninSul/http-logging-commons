@@ -24,6 +24,7 @@ import java.util.logging.Logger
  *     bodies in the log message.
  * @constructor Creates an instance of HttpLoggingHelper.
  * @property properties The HTTP logger properties.
+ * @property uriMaskers Te list of uri maskers
  * @property requestBodyMaskers The list of request body maskers.
  * @property responseBodyMaskers The list of response body maskers.
  * @property logger The logger to use for logging.
@@ -41,6 +42,7 @@ import java.util.logging.Logger
 open class HttpLoggingHelper(
     protected open val name:String,
     protected open val properties: HttpLoggingProperties,
+    protected open val uriMaskers: List<HttpUriMasking>,
     protected open val requestBodyMaskers: List<HttpRequestBodyMasking>,
     protected open val responseBodyMaskers: List<HttpResponseBodyMasking>,
     protected open val logger: Logger = Logger.getLogger(HttpLoggingHelper::class.java.name),
@@ -120,7 +122,7 @@ open class HttpLoggingHelper(
      *     the log message, otherwise null.
      */
     open fun getUriString(logEnabledForRequest: Boolean?, uri: String, type: Type): String? {
-        return if (logEnabledForRequest ?: type.properties().uriIncluded) formatLine("URI", uri)
+        return if (logEnabledForRequest ?: type.properties().uriIncluded) formatLine("URI", uriMaskers.fold(uri) { b, it -> it.mask(b) })
         else null
     }
 
