@@ -15,7 +15,7 @@ import java.util.logging.Logger
  *
  * @param name The name associated with the logger.
  * @param properties The configuration properties for HTTP logging.
- * @param uriMaskersGetFunction Function for generating URI maskers based
+ * @param uriMaskersCreateFunction Function for generating URI maskers based
  *    on configuration.
  * @param requestBodyJsonKeyMaskersGetFunction Function for generating JSON
  *    key maskers for request bodies.
@@ -38,8 +38,8 @@ import java.util.logging.Logger
 open class HttpLoggingHelper(
     protected open val name: String,
     protected open val properties: HttpLoggingProperties,
-    protected open val uriMaskersGetFunction: Function<Collection<String>, Collection<HttpUriMasking>> = Function { listOf(HttpRegexUriMasking(it)) },
-    protected open val bodyKeyMaskersGetFunctions: Map<HttpBodyType, Function<Collection<String>, Collection<HttpBodyMasking>>> = mapOf(
+    protected open val uriMaskersCreateFunction: Function<Collection<String>, Collection<HttpUriMasking>> = Function { listOf(HttpRegexUriMasking(it)) },
+    protected open val bodyKeyMaskersCreateFunctions: Map<HttpBodyType, Function<Collection<String>, Collection<HttpBodyMasking>>> = mapOf(
         JsonBodyType to Function { listOf(HttpRegexJsonBodyMasking(it)) },
         FormBodyType to Function { listOf(HttpRegexFormBodyMasking(it)) }
     ),
@@ -50,15 +50,15 @@ open class HttpLoggingHelper(
     open val maskedFormat: String = "<MASKED>",
     protected open val tooBigBodyFormat: String = "<TOO BIG %contentLength% bytes>"
 ) {
-    protected open val uriMaskers: Collection<HttpUriMasking> = uriMaskersGetFunction.apply(properties.request.mask.maskQueryParameters).distinct()
+    protected open val uriMaskers: Collection<HttpUriMasking> = uriMaskersCreateFunction.apply(properties.request.mask.maskQueryParameters).distinct()
     protected open val requestBodyMaskers: Collection<HttpRequestBodyMasking> =
-        ((bodyKeyMaskersGetFunctions[JsonBodyType]?.apply(properties.request.mask.maskJsonBodyKeys)?.map { it.toHttpRequestBodyMasking() } ?: listOf())
-                + (bodyKeyMaskersGetFunctions[FormBodyType]?.apply(properties.request.mask.maskFormBodyKeys)?.map { it.toHttpRequestBodyMasking() } ?: listOf()))
-            .distinct()
+        properties.request.mask.maskBodyKeys.map { (bodyKeyMaskersCreateFunctions[it.key]?:throw IllegalStateException("No body Key Maskers Create Function for ${it.key} body type")).apply(it.value) }
+            .flatten().distinct().map { it.toHttpRequestBodyMasking() }
+
     protected open val responseBodyMaskers: Collection<HttpResponseBodyMasking> =
-        ((bodyKeyMaskersGetFunctions[JsonBodyType]?.apply(properties.response.mask.maskJsonBodyKeys)?.map { it.toHttpResponseBodyMasking() } ?: listOf())
-                + (bodyKeyMaskersGetFunctions[FormBodyType]?.apply(properties.response.mask.maskFormBodyKeys)?.map { it.toHttpResponseBodyMasking() } ?: listOf()))
-            .distinct()
+        properties.response.mask.maskBodyKeys.map { (bodyKeyMaskersCreateFunctions[it.key]?:throw IllegalStateException("No body Key Maskers Create Function for ${it.key} body type")).apply(it.value) }
+            .flatten().distinct().map { it.toHttpResponseBodyMasking() }
+
 
     /**
      * Represents the logging level for the logger.
@@ -172,7 +172,7 @@ open class HttpLoggingHelper(
     open fun getUriString(uriParametersToMask: Collection<String>?, logEnabledForRequest: Boolean?, uri: String, type: Type): String? {
         val enabled = (logEnabledForRequest ?: type.properties().uriIncluded)
         if (!enabled) return null
-        val maskers = uriParametersToMask?.let { p -> uriMaskersGetFunction.apply(p) } ?: uriMaskers
+        val maskers = uriParametersToMask?.let { p -> uriMaskersCreateFunction.apply(p) } ?: uriMaskers
         return formatLine("URI", maskers.fold(uri) { b, it -> it.mask(b) })
     }
 
@@ -259,7 +259,7 @@ open class HttpLoggingHelper(
                            logEnabledForRequest: Boolean?, bodySupplier: Supplier<String?>, type: Type): String? {
         val enabled = (logEnabledForRequest ?: type.properties().bodyIncluded)
         if (!enabled) return null
-        val paramMaskers = bodyKeysToMask?.flatMap { e->bodyKeyMaskersGetFunctions[e.key]!!.apply(e.value) }
+        val paramMaskers = bodyKeysToMask?.flatMap { e->bodyKeyMaskersCreateFunctions[e.key]!!.apply(e.value) }
 
         val maskers = when (type) {
             Type.REQUEST -> paramMaskers ?: requestBodyMaskers
