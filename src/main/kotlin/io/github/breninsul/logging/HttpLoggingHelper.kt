@@ -137,6 +137,21 @@ open class HttpLoggingHelper(
     }
 
     /**
+     * Retrieves the ID string for logging purposes.
+     *
+     * This is a deprecated method that delegates to another method with an additional
+     * `logEnabledForRequest` parameter.
+     *
+     * @param rqId The request ID to be included in the log message.
+     * @param type The type of the log message (Request or Response).
+     * @return The formatted ID string if applicable, otherwise null.
+     */
+    @Deprecated(message = "Use function with logEnabledForRequest param", replaceWith = ReplaceWith("getIdString(null, rqId, type)"))
+    open fun getIdString(rqId: String, type: Type): String? {
+        return getIdString(null,rqId,type)
+    }
+
+    /**
      * Retrieves the URI string for logging purposes.
      *
      * @param logEnabledForRequest Indicates if logging is enabled for the
