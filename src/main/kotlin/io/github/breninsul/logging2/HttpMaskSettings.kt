@@ -1,4 +1,4 @@
-package io.github.breninsul.logging
+package io.github.breninsul.logging2
 
 /**
  * Represents the settings for masking sensitive information in HTTP requests and responses.

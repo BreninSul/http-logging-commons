@@ -23,7 +23,7 @@
  */
 
 
-package io.github.breninsul.logging
+package io.github.breninsul.logging2
 
 import java.util.logging.Level
 

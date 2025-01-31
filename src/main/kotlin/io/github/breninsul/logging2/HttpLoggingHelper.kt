@@ -1,6 +1,6 @@
-package io.github.breninsul.logging
+package io.github.breninsul.logging2
 
-import io.github.breninsul.logging.HttpConfigHeaders.TECHNICAL_HEADERS
+import io.github.breninsul.logging2.HttpConfigHeaders.TECHNICAL_HEADERS
 import java.util.*
 import java.util.function.Function
 import java.util.function.Supplier

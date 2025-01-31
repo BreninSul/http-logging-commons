@@ -1,4 +1,4 @@
-package io.github.breninsul.logging
+package io.github.breninsul.logging2
 
 /**
  * Defines the settings for HTTP logging, including what details should be included in the logs

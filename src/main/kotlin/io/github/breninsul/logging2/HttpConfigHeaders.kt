@@ -1,4 +1,4 @@
-package io.github.breninsul.logging
+package io.github.breninsul.logging2
 
 /**
  * The RestTemplateConfigHeaders class defines constants for the technical

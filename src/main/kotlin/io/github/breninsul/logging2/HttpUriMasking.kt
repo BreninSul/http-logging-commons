@@ -1,4 +1,4 @@
-package io.github.breninsul.logging
+package io.github.breninsul.logging2
 
 interface HttpUriMasking {
     fun mask(uri: String?): String
