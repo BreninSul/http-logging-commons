@@ -37,7 +37,7 @@ val kotlinVersion = "2.0.0"
 val javaVersion = JavaVersion.VERSION_17
 
 group = "io.github.breninsul"
-version = "1.3.0"
+version = "1.3.1"
 
 java {
     sourceCompatibility = javaVersion
