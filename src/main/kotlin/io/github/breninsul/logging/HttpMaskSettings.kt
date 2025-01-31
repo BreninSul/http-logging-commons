@@ -14,4 +14,11 @@ open class HttpMaskSettings(
     var maskQueryParameters: List<String> = listOf("Authorization","authorization","token", "secret","password","code"),
     var maskJsonBodyKeys: List<String> = listOf("password", "pass", "code", "token", "secret"),
     var maskFormBodyKeys: List<String> = listOf("password", "pass", "code", "token", "secret"),
-) 
+) {
+    @Deprecated("Renamed to maskFormBodyKeys", ReplaceWith("maskFormBodyKeys"))
+    var maskFormUrlencodedBodyKeys: List<String>
+        get() = maskFormBodyKeys
+        set(value) {
+            maskJsonBodyKeys = value
+        };
+}
