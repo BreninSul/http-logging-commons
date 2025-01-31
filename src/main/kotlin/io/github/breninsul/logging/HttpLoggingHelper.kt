@@ -63,6 +63,26 @@ open class HttpLoggingHelper(
     open val loggingLevel: Level = properties.loggingLevel.javaLevel
 
     /**
+     * Specifies the logging level for HTTP request messages.
+     *
+     * This property determines the verbosity of logging for HTTP requests.
+     * The value is derived from the `properties.request.loggingLevel.javaLevel` setting,
+     * which is typically configured in the application properties or settings file.
+     */
+    open val requestLoggingLevel: Level = properties.request.loggingLevel.javaLevel
+
+    /**
+     * Represents the logging level to be used for response logs.
+     *
+     * The value of this property is derived from the response logging level defined in the application
+     * properties. It determines the verbosity of response log messages. Typically, it can be set to
+     * different levels like DEBUG, INFO, WARN, etc., based on the requirements for diagnosing issues
+     * or general monitoring.
+     */
+    open val responseLoggingLevel: Level = properties.response.loggingLevel.javaLevel
+
+
+    /**
      * Retrieves the formatted header line based on the given type.
      *
      * This method replaces the placeholders in the header format string with the actual values*/
@@ -99,13 +119,19 @@ open class HttpLoggingHelper(
     /**
      * Retrieves the ID string for logging purposes.
      *
-     * @param rqId The request ID.
-     * @param type The type of the log message.
-     * @return The formatted ID string if it is included in logging, otherwise
-     *     null.
+     * This method determines whether the ID should be included
+     * in the log message based on the `logEnabledForRequest` flag
+     * and the `idIncluded` property of the given type. If the ID should
+     * be included, it formats the ID line using the provided request ID.
+     *
+     * @param logEnabledForRequest Indicates if logging is enabled for the request.
+     * @param rqId The request ID to be included in the log message.
+     * @param type The type of the log message (Request or Response).
+     * @return The formatted ID string if logging is enabled and the type properties
+     *         indicate the ID should be included, otherwise null.
      */
-    open fun getIdString(rqId: String, type: Type): String? {
-        return if (type.properties().idIncluded) formatLine("ID", rqId)
+    open fun getIdString(logEnabledForRequest: Boolean?,rqId: String, type: Type): String? {
+        return if (logEnabledForRequest ?: type.properties().idIncluded) formatLine("ID", rqId)
         else null
 
     }
