@@ -29,7 +29,4 @@ open class HttpLogSettings(
     var bodyIncluded: Boolean = true,
     var maxBodySize: Int = Int.MAX_VALUE,
     var mask: HttpMaskSettings = HttpMaskSettings(),
-) {
-    @Deprecated("Use `loggingLevel` parameter included constructor")
-    constructor(idIncluded: Boolean=true,uriIncluded: Boolean=true,tookTimeIncluded: Boolean=true,headersIncluded: Boolean=true,bodyIncluded: Boolean=true,maxBodySize: Int=Int.MAX_VALUE,mask: HttpMaskSettings=HttpMaskSettings()) : this(JavaLoggingLevel.INFO,idIncluded,uriIncluded,tookTimeIncluded,headersIncluded,bodyIncluded,maxBodySize,mask)
-}
+)

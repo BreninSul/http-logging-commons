@@ -10,15 +10,8 @@ package io.github.breninsul.logging
  * @param maskFormBodyKeys A list of form-urlencoded body keys whose values should be masked. Default value is `listOf("password", "pass", "code", "token", "secret")`.  Renamed from `maskFormUrlencodedBodyKeys` @since `1.3.0`
  */
 open class HttpMaskSettings(
-    var maskHeaders: List<String> = listOf("Authorization"),
-    var maskQueryParameters: List<String> = listOf("Authorization","authorization","token", "secret","password","code"),
-    var maskJsonBodyKeys: List<String> = listOf("password", "pass", "code", "token", "secret"),
-    var maskFormBodyKeys: List<String> = listOf("password", "pass", "code", "token", "secret"),
-) {
-    @Deprecated("Renamed to maskFormBodyKeys", ReplaceWith("maskFormBodyKeys"))
-    var maskFormUrlencodedBodyKeys: List<String>
-        get() = maskFormBodyKeys
-        set(value) {
-            maskJsonBodyKeys = value
-        };
-}
+    var maskHeaders: Collection<String> = listOf("Authorization"),
+    var maskQueryParameters: Collection<String> = listOf("Authorization","authorization","token", "secret","password","code"),
+    var maskJsonBodyKeys: Collection<String> = listOf("password", "pass", "code", "token", "secret"),
+    var maskFormBodyKeys: Collection<String> = listOf("password", "pass", "code", "token", "secret"),
+)

@@ -5,11 +5,11 @@ interface HttpUriMasking {
 }
 
 open class HttpRegexUriMasking(
-    protected open val fields: List<String>,
+    protected open val fields: Collection<String>,
 ) : HttpUriMasking {
     protected open val emptyBody: String = ""
     protected open val maskedBody: String = "<MASKED>"
-    protected open val regexList: List<Regex> = fields.flatMap {
+    protected open val regexList: Collection<Regex> = fields.flatMap {
         listOf(
             "($it)(=)([^&]*)(&)".toRegex(),
             "($it)(=)([^&]*)(\$)".toRegex()
@@ -31,4 +31,6 @@ open class HttpRegexUriMasking(
         }
         return maskedMessage.toString()
     }
+    override fun hashCode(): Int =fields.joinToString(",").hashCode()
+    override fun equals(other: Any?): Boolean =other!=null&&other.hashCode()==hashCode()
 }
