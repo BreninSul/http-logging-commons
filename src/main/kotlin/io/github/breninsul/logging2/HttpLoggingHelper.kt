@@ -57,7 +57,7 @@ open class HttpLoggingHelper(
 
     protected open val responseBodyMaskers: Collection<HttpResponseBodyMasking> =
         properties.response.mask.maskBodyKeys.map { (bodyKeyMaskersCreateFunctions[it.key]?:throw IllegalStateException("No body Key Maskers Create Function for ${it.key} body type")).apply(it.value) }
-            .flatten().distinct().map { it.toHttpResponseBodyMasking() }
+            .flatten().distinct().map { it.toHttpResponseBodyMasking( ) }
 
 
     /**
@@ -213,7 +213,7 @@ open class HttpLoggingHelper(
      *    and headers inclusion is allowed for the given type. Returns null
      *    otherwise.
      */
-    open fun getHeadersString(headersToMask: Collection<String>?, logEnabledForRequest: Boolean?, headers: Map<String, List<String>>, type: Type): String? {
+    open fun getHeadersString(headersToMask: Collection<String>?, logEnabledForRequest: Boolean?, headers: Map<String, Collection<String>>, type: Type): String? {
         val enabled = (logEnabledForRequest ?: type.properties().headersIncluded)
         if (!enabled) return null
         val maskHeaders = headersToMask ?: getMaskedHeaders(type)
@@ -237,7 +237,7 @@ open class HttpLoggingHelper(
      * @param maskingHeaders The list of headers to be masked.
      * @return The formatted headers string.
      */
-    protected open fun Map<String, List<String>>.getHeadersString(maskingHeaders: Collection<String>) =
+    protected open fun Map<String, Collection<String>>.getHeadersString(maskingHeaders: Collection<String>) =
         (this.asSequence()
             .filter { h -> !TECHNICAL_HEADERS.any { th -> th.contentEquals(h.key) } }
             .map { "${it.key}:${if (maskingHeaders.any { m -> m.contentEquals(it.key, true) }) maskedFormat else it.value.joinToString(",")}" }
@@ -255,11 +255,11 @@ open class HttpLoggingHelper(
      * @param type The type of the log message (Request or Response), which determines the context for body masking and inclusion.
      * @return The optionally masked body string if logging is enabled; otherwise, returns null.
      */
-    open fun getBodyString(bodyKeysToMask: Map<HttpBodyType,Collection<String>>?,
+    open fun getBodyString(bodyKeysToMask: Map<HttpBodyType,Collection<String>?>?,
                            logEnabledForRequest: Boolean?, bodySupplier: Supplier<String?>, type: Type): String? {
         val enabled = (logEnabledForRequest ?: type.properties().bodyIncluded)
         if (!enabled) return null
-        val paramMaskers = bodyKeysToMask?.flatMap { e->bodyKeyMaskersCreateFunctions[e.key]!!.apply(e.value) }
+        val paramMaskers = bodyKeysToMask?.filter { it.value!=null }?.mapValues { it.value as Collection<String> }?.flatMap { e->bodyKeyMaskersCreateFunctions[e.key]!!.apply(e.value) }
 
         val maskers = when (type) {
             Type.REQUEST -> paramMaskers ?: requestBodyMaskers

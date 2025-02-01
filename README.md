@@ -7,7 +7,7 @@ add the following dependency:
 ````kotlin
 dependencies {
 //Other dependencies
-    implementation("io.github.breninsul:http-logging-commons-2:2.0.3")
+    implementation("io.github.breninsul:http-logging-commons-2:2.0.4")
 //Other dependencies
 }
 
