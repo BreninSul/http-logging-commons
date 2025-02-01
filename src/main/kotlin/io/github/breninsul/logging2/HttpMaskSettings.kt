@@ -25,7 +25,7 @@ open class HttpMaskSettings(
 
 open class HttpBodyType(val type: String) {
     override fun hashCode() = type.hashCode()
-    override fun equals(other: Any?) = type == other
+    override fun equals(other: Any?) = other!=null&&other is HttpBodyType && type==other.type
     override fun toString() = type
 }
 
