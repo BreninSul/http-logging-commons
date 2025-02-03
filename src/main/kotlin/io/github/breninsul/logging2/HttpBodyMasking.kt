@@ -38,32 +38,38 @@ open class HttpRegexJsonBodyMasking(
 ) : HttpBodyMasking {
     protected open val emptyBody: String = ""
     protected open val maskedBody: String = "<MASKED>"
-    protected open val regexList: Map<String,Collection<Regex>> =
-        fields.map { f-> f to listOf(
-            //int or bool
-            """"($f)"\s*:\s*([+-]?\d+|true|false)(?=\s*(,|\}))""".toRegex(),
-//            """"($f)"\s*:\s*([+-]?\d+|true|false)\s*,""".toRegex(),
-//            """"($f)"\s*:\s*([+-]?\d+|true|false)\s*}""".toRegex(),
-            //string
-            """"($f)"\s*:\s*"((\\"|[^"])*)"""".toRegex(),
-            //array
-            """"($f)"\s*:\s*\[(\s*(?:"(?:\\.|[^"\\])*"\s*,?\s*)*)\]""".toRegex(),
-            //object
-            """"($f)"\s*:\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}""".toRegex()  )  }.toMap()
+    protected open val regexList: Map<String, Collection<Regex>> =
+        fields.map { f ->
+            f to listOf(
+                //int or bool
+                """"($f)"\s*:\s*([+-]?\d+|true|false)(?=\s*(,|\}))""".toRegex(),
+                //string
+                """"($f)"\s*:\s*"((\\"|[^"])*)"""".toRegex(),
+                //array
+                """"($f)"\s*:\s*\[(\s*(?:"(?:\\.|[^"\\])*"\s*,?\s*)*)\]""".toRegex(),
+                //object
+                """"($f)"\s*:\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}""".toRegex()
+            )
+        }.toMap()
+
     override fun mask(message: String?): String {
         if (message == null) {
             return emptyBody
         }
         val maskedMessage = StringBuilder(message)
-        regexList
+        val ranges = regexList
+            .asSequence()
             .filter { message.contains(""""${it.key}"""") }
-            .values.flatten()
-            .asSequence().forEach { regex ->
-            val ranges = regex.findAll(maskedMessage).map { it.groups[2]!!.range }.sortedBy { it.last * -1 }
-            ranges.forEach { range ->
+            .flatMap { it.value }
+            .flatMap { regex -> regex.findAll(maskedMessage).map { it.groups[2]!!.range } }
+            .sortedBy { it.last * -1 }
+            .toList()
+        ranges
+            .filter { range -> ranges.filter { r -> r != range }.none { r -> r.first <= range.first && r.last >= range.last } }
+            .asSequence()
+            .forEach { range ->
                 maskedMessage.replace(range.first, range.last + 1, maskedBody)
             }
-        }
         return maskedMessage.toString()
     }
 
@@ -78,7 +84,7 @@ open class HttpRegexFormBodyMasking(
 ) : HttpBodyMasking {
     protected open val emptyBody: String = ""
     protected open val maskedBody: String = "<MASKED>"
-    protected open val regexList: Map<String,Collection<Regex>> = fields.map { f->
+    protected open val regexList: Map<String, Collection<Regex>> = fields.map { f ->
         f to listOf(
             "($f)(=)([^&]*)(&)".toRegex(),
             "($f)(=)([^&]*)(\$)".toRegex()
@@ -90,16 +96,19 @@ open class HttpRegexFormBodyMasking(
             return emptyBody
         }
         val maskedMessage = StringBuilder(message)
-        regexList
+        val ranges = regexList
+            .asSequence()
             .filter { message.contains("""${it.key}=""") }
-            .values.flatten()
-            .asSequence().forEach { regex ->
-            val ranges = regex.findAll(maskedMessage).map { it.groups[3]!!.range }.sortedBy { it.last * -1 }
-
-            ranges.forEach { range ->
+            .flatMap { it.value }
+            .flatMap { regex -> regex.findAll(maskedMessage).map { it.groups[3]!!.range } }
+            .sortedBy { it.last * -1 }
+            .toList()
+        ranges
+            .asSequence()
+            .filter { range -> ranges.filter { r -> r != range }.none { r -> r.first <= range.first && r.last >= range.last } }
+            .forEach { range ->
                 maskedMessage.replace(range.first, range.last + 1, maskedBody)
             }
-        }
         return maskedMessage.toString()
     }
 
