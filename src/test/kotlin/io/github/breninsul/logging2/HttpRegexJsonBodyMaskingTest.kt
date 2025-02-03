@@ -18,24 +18,25 @@ class HttpRegexJsonBodyMaskingTest {
      */
     @Test
     fun `test no mask with field present`() {
-        val time=System.currentTimeMillis()
         val fields = listOf("password", "token","123213123","asdsad2123")
         val masking = HttpRegexJsonBodyMasking(fields)
-
         val json = """{"username":"john_doe","password1":"secret123","token1":"abc12345"}""".repeat(1000000)
+        println("Length ${json.length/(1024*1024)} mb")
+        val time=System.currentTimeMillis()
         val result = masking.mask(json)
         assertEquals(json, result)
         println("Time took: ${System.currentTimeMillis()-time} ms")
     }
     @Test
     fun `test mask once  with field present`() {
-        val time=System.currentTimeMillis()
         val fields = listOf("password", "token")
         val masking = HttpRegexJsonBodyMasking(fields)
 
         val repeated = """{"username":"john_doe","password1":"secret123","token1":"abc12345"}""".repeat(1000000)
         val json = repeated +"""{"username":"john_doe","password":"secret123","token":"abc12345"}"""+"""{"password": ["saddsa","asdsd[edfasd\"esf]"],"it2": ["other"]}"""+"""{"password": {"1":["saddsa","as[]{}dsd[edfasd\"esf]"],"it2": ["other"]},"2":{}}"""
         val expected=repeated+"""{"username":"john_doe","password":"<MASKED>","token":"<MASKED>"}"""+"""{"password": [<MASKED>],"it2": ["other"]}"""+"""{"password": {<MASKED>},"2":{}}"""
+        println("Length ${json.length/(1024*1024)} mb")
+        val time=System.currentTimeMillis()
         val result = masking.mask(json)
         assertEquals(expected, result)
         println("Time took: ${System.currentTimeMillis()-time} ms")

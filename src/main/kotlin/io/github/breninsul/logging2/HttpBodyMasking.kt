@@ -38,18 +38,17 @@ open class HttpRegexJsonBodyMasking(
 ) : HttpBodyMasking {
     protected open val emptyBody: String = ""
     protected open val maskedBody: String = "<MASKED>"
-    protected open val regexList: Collection<Regex> =
-        fields.map { """"($it)"\s*:\s*"((\\"|[^"])*)"""".toRegex() } +
-                fields.map { """"($it)"\s*:\s*\[(\s*(?:"(?:\\.|[^"\\])*"\s*,?\s*)*)\]""".toRegex() } +
-                fields.map { """"($it)"\s*:\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}""".toRegex() }
-
-
+    protected open val regexList: Map<String,Collection<Regex>> =
+        fields.map { f-> f to listOf(""""($f)"\s*:\s*"((\\"|[^"])*)"""".toRegex(),""""($f)"\s*:\s*\[(\s*(?:"(?:\\.|[^"\\])*"\s*,?\s*)*)\]""".toRegex(), """"($f)"\s*:\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}""".toRegex()  )  }.toMap()
     override fun mask(message: String?): String {
         if (message == null) {
             return emptyBody
         }
         val maskedMessage = StringBuilder(message)
-        regexList.forEach { regex ->
+        regexList
+            .filter { message.contains(""""${it.key}"""") }
+            .values.flatten()
+            .asSequence().forEach { regex ->
             val ranges = regex.findAll(maskedMessage).map { it.groups[2]!!.range }.sortedBy { it.last * -1 }
             ranges.forEach { range ->
                 maskedMessage.replace(range.first, range.last + 1, maskedBody)
@@ -69,20 +68,22 @@ open class HttpRegexFormBodyMasking(
 ) : HttpBodyMasking {
     protected open val emptyBody: String = ""
     protected open val maskedBody: String = "<MASKED>"
-    protected open val regexList: Collection<Regex> = fields.flatMap {
-        listOf(
-            "($it)(=)([^&]*)(&)".toRegex(),
-            "($it)(=)([^&]*)(\$)".toRegex()
+    protected open val regexList: Map<String,Collection<Regex>> = fields.map { f->
+        f to listOf(
+            "($f)(=)([^&]*)(&)".toRegex(),
+            "($f)(=)([^&]*)(\$)".toRegex()
         )
-    }
+    }.toMap()
 
     override fun mask(message: String?): String {
         if (message == null) {
             return emptyBody
         }
         val maskedMessage = StringBuilder(message)
-        regexList.forEach { regex ->
-
+        regexList
+            .filter { message.contains("""${it.key}=""") }
+            .values.flatten()
+            .asSequence().forEach { regex ->
             val ranges = regex.findAll(maskedMessage).map { it.groups[3]!!.range }.sortedBy { it.last * -1 }
 
             ranges.forEach { range ->
