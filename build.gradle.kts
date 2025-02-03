@@ -37,7 +37,7 @@ val kotlinVersion = "2.0.0"
 val javaVersion = JavaVersion.VERSION_17
 
 group = "io.github.breninsul"
-version = "2.0.5"
+version = "2.0.6"
 
 java {
     sourceCompatibility = javaVersion
@@ -57,8 +57,7 @@ tasks.compileKotlin {
 }
 
 dependencies {
-//    kapt("org.springframework.boot:spring-boot-autoconfigure-processor")
-//    kapt("org.springframework.boot:spring-boot-configuration-processor")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
 }
 val javadocJar =
     tasks.named<Jar>("javadocJar") {

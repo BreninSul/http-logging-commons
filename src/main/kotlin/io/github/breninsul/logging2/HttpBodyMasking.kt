@@ -2,7 +2,7 @@ package io.github.breninsul.logging2
 
 interface HttpBodyMasking {
     fun mask(message: String?): String
-    fun type():HttpBodyType
+    fun type(): HttpBodyType
 }
 
 interface HttpRequestBodyMasking : HttpBodyMasking
@@ -13,30 +13,36 @@ open class HttpRequestBodyMaskingDelegate(
     protected open val delegate: HttpBodyMasking,
 ) : HttpRequestBodyMasking {
     override fun mask(message: String?): String = delegate.mask(message)
-    override fun type(): HttpBodyType =delegate.type()
+    override fun type(): HttpBodyType = delegate.type()
     override fun toString(): String = delegate.toString()
-    override fun hashCode(): Int =delegate.hashCode()
+    override fun hashCode(): Int = delegate.hashCode()
     override fun equals(other: Any?): Boolean = delegate == other
 }
-fun HttpBodyMasking.toHttpRequestBodyMasking():HttpRequestBodyMasking=HttpRequestBodyMaskingDelegate(this)
+
+fun HttpBodyMasking.toHttpRequestBodyMasking(): HttpRequestBodyMasking = HttpRequestBodyMaskingDelegate(this)
 
 open class HttpResponseBodyMaskingDelegate(
     protected open val delegate: HttpBodyMasking
 ) : HttpResponseBodyMasking {
     override fun mask(message: String?): String = delegate.mask(message)
-    override fun type(): HttpBodyType =delegate.type()
+    override fun type(): HttpBodyType = delegate.type()
     override fun toString(): String = delegate.toString()
-    override fun hashCode(): Int =delegate.hashCode()
+    override fun hashCode(): Int = delegate.hashCode()
     override fun equals(other: Any?): Boolean = delegate == other
 }
-fun HttpBodyMasking.toHttpResponseBodyMasking():HttpResponseBodyMasking=HttpResponseBodyMaskingDelegate(this)
+
+fun HttpBodyMasking.toHttpResponseBodyMasking(): HttpResponseBodyMasking = HttpResponseBodyMaskingDelegate(this)
 
 open class HttpRegexJsonBodyMasking(
     protected open val fields: Collection<String>
 ) : HttpBodyMasking {
     protected open val emptyBody: String = ""
     protected open val maskedBody: String = "<MASKED>"
-    protected open val regexList: Collection<Regex> = fields.map { "\"($it)\"\\s*:\\s*\"([^\"]*)\"".toRegex() }
+    protected open val regexList: Collection<Regex> =
+        fields.map { """"($it)"\s*:\s*"((\\"|[^"])*)"""".toRegex() } +
+                fields.map { """"($it)"\s*:\s*\[(\s*(?:"(?:\\.|[^"\\])*"\s*,?\s*)*)\]""".toRegex() } +
+                fields.map { """"($it)"\s*:\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}""".toRegex() }
+
 
     override fun mask(message: String?): String {
         if (message == null) {
@@ -52,10 +58,10 @@ open class HttpRegexJsonBodyMasking(
         return maskedMessage.toString()
     }
 
-    override fun type(): HttpBodyType =JsonBodyType
+    override fun type(): HttpBodyType = JsonBodyType
 
-    override fun hashCode(): Int =fields.joinToString(",").hashCode()
-    override fun equals(other: Any?): Boolean =other!=null&&other.hashCode()==hashCode()
+    override fun hashCode(): Int = fields.joinToString(",").hashCode()
+    override fun equals(other: Any?): Boolean = other != null && other.hashCode() == hashCode()
 }
 
 open class HttpRegexFormBodyMasking(
@@ -86,10 +92,10 @@ open class HttpRegexFormBodyMasking(
         return maskedMessage.toString()
     }
 
-    override fun type(): HttpBodyType =FormBodyType
+    override fun type(): HttpBodyType = FormBodyType
 
-    override fun hashCode(): Int =fields.joinToString(",").hashCode()
-    override fun equals(other: Any?): Boolean =other!=null&&other.hashCode()==hashCode()
+    override fun hashCode(): Int = fields.joinToString(",").hashCode()
+    override fun equals(other: Any?): Boolean = other != null && other.hashCode() == hashCode()
 }
 
 
