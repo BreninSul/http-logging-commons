@@ -39,7 +39,17 @@ open class HttpRegexJsonBodyMasking(
     protected open val emptyBody: String = ""
     protected open val maskedBody: String = "<MASKED>"
     protected open val regexList: Map<String,Collection<Regex>> =
-        fields.map { f-> f to listOf(""""($f)"\s*:\s*"((\\"|[^"])*)"""".toRegex(),""""($f)"\s*:\s*\[(\s*(?:"(?:\\.|[^"\\])*"\s*,?\s*)*)\]""".toRegex(), """"($f)"\s*:\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}""".toRegex()  )  }.toMap()
+        fields.map { f-> f to listOf(
+            //int or bool
+            """"($f)"\s*:\s*([+-]?\d+|true|false)(?=\s*(,|\}))""".toRegex(),
+//            """"($f)"\s*:\s*([+-]?\d+|true|false)\s*,""".toRegex(),
+//            """"($f)"\s*:\s*([+-]?\d+|true|false)\s*}""".toRegex(),
+            //string
+            """"($f)"\s*:\s*"((\\"|[^"])*)"""".toRegex(),
+            //array
+            """"($f)"\s*:\s*\[(\s*(?:"(?:\\.|[^"\\])*"\s*,?\s*)*)\]""".toRegex(),
+            //object
+            """"($f)"\s*:\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}""".toRegex()  )  }.toMap()
     override fun mask(message: String?): String {
         if (message == null) {
             return emptyBody

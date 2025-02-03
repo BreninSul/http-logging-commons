@@ -4,7 +4,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class HttpRegexJsonBodyMaskingTest {
-
+ @Test
+ fun repeat1000(){
+     repeat(1000){
+         `test mask with field present`()
+     }
+ }
     /**
      * Tests for `HttpRegexJsonBodyMasking` class.
      *
@@ -44,11 +49,11 @@ class HttpRegexJsonBodyMaskingTest {
     @Test
     fun `test mask with field present`() {
         val time=System.currentTimeMillis()
-        val fields = listOf("password", "token")
+        val fields = listOf("password", "token","length","secret")
         val masking = HttpRegexJsonBodyMasking(fields)
 
-        val json = """{"username":"john_doe","password":"secret123","token":"abc12345"}"""
-        val expected = """{"username":"john_doe","password":"<MASKED>","token":"<MASKED>"}"""
+        val json = """{"username":"john_doe","secret":"sec","password":"secret123","token":"abc12345","length" : 123123 }"""
+        val expected = """{"username":"john_doe","secret":"<MASKED>","password":"<MASKED>","token":"<MASKED>","length" : <MASKED> }"""
 
         val result = masking.mask(json)
         assertEquals(expected, result)
