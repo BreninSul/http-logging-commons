@@ -86,7 +86,7 @@ open class HttpRegexJsonBodyMasking(
 
     override fun type(): HttpBodyType = JsonBodyType
 
-    override fun hashCode(): Int = fields.joinToString(",").hashCode()
+    override fun hashCode(): Int = (javaClass.simpleName+fields.joinToString(",")).hashCode()
     override fun equals(other: Any?): Boolean = other != null && other.hashCode() == hashCode()
 }
 
@@ -133,7 +133,7 @@ open class HttpRegexFormBodyMasking(
 
     override fun type(): HttpBodyType = FormBodyType
 
-    override fun hashCode(): Int = fields.joinToString(",").hashCode()
+    override fun hashCode(): Int = (javaClass.simpleName+fields.joinToString(",")).hashCode()
     override fun equals(other: Any?): Boolean = other != null && other.hashCode() == hashCode()
 }
 
