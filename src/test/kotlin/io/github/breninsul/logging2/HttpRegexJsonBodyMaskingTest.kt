@@ -46,7 +46,9 @@ open class HttpRegexJsonBodyMaskingTest {
         println("Length ${json.length / (1024 * 1024)} mb")
         val time = System.currentTimeMillis()
         val result = masking.mask(json)
-        assertEquals(expected, result)
+        val hashCode = expected.hashCode()
+        val hashCode1 = result.hashCode()
+        assertEquals(hashCode, hashCode1)
         println("Time took: ${System.currentTimeMillis() - time} ms")
     }
 

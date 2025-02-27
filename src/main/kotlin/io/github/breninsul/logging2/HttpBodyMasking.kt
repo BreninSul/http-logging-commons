@@ -1,5 +1,7 @@
 package io.github.breninsul.logging2
 
+import com.google.re2j.Pattern
+
 interface HttpBodyMasking {
     fun mask(message: String?): String
     fun type(): HttpBodyType
@@ -38,17 +40,18 @@ open class HttpRegexJsonBodyMasking(
 ) : HttpBodyMasking {
     protected open val emptyBody: String = ""
     protected open val maskedBody: String = "<MASKED>"
-    protected open val regexList: Map<String, Collection<Regex>> =
+    protected open val regexList: Map<String, Collection<Pattern>> =
         fields.map { f ->
             f to listOf(
                 //int or bool
-                """"($f)"\s*:\s*([+-]?\d+|true|false)(?=\s*(,|\}))""".toRegex(),
-                //string
-                """"($f)"\s*:\s*"((\\"|[^"])*)"""".toRegex(),
-                //array
-                """"($f)"\s*:\s*\[(\s*(?:"(?:\\.|[^"\\])*"\s*,?\s*)*)\]""".toRegex(),
-                //object
-                """"($f)"\s*:\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}""".toRegex()
+                """"($f)"\s*:\s*([+-]?\d+|true|false)\s*(,|\})""".toRE2Pattern(),
+                // string
+                """"($f)"\s*:\s*"((\\"|[^"])*)"""".toRE2Pattern(),
+                // array
+                """"($f)"\s*:\s*\[(\s*(?:"(?:\\.|[^"\\])*"\s*,?\s*)*)\]""".toRE2Pattern(),
+                // object
+                """"($f)"\s*:\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}""".toRE2Pattern()
+
             )
         }.toMap()
 
@@ -61,7 +64,15 @@ open class HttpRegexJsonBodyMasking(
             .asSequence()
             .filter { message.contains(""""${it.key}"""") }
             .flatMap { it.value }
-            .flatMap { regex -> regex.findAll(maskedMessage).map { it.groups[2]!!.range } }
+            .flatMap { regex ->
+                val matcher = regex.matcher(maskedMessage)
+                val ranges= mutableListOf<IntRange>()
+                while (matcher.find()) {
+                    val groupStart = matcher.start(2)
+                    val groupEnd = matcher.end(2)-1
+                    ranges.add(groupStart..groupEnd)
+                }
+                ranges}
             .sortedBy { it.last * -1 }
             .toList()
         ranges
@@ -84,10 +95,10 @@ open class HttpRegexFormBodyMasking(
 ) : HttpBodyMasking {
     protected open val emptyBody: String = ""
     protected open val maskedBody: String = "<MASKED>"
-    protected open val regexList: Map<String, Collection<Regex>> = fields.map { f ->
+    protected open val regexList: Map<String, Collection<Pattern>> = fields.map { f ->
         f to listOf(
-            "($f)(=)([^&]*)(&)".toRegex(),
-            "($f)(=)([^&]*)(\$)".toRegex()
+            "($f)(=)([^&]*)(&)".toRE2Pattern(),
+            "($f)(=)([^&]*)(\$)".toRE2Pattern()
         )
     }.toMap()
 
@@ -100,7 +111,15 @@ open class HttpRegexFormBodyMasking(
             .asSequence()
             .filter { message.contains("""${it.key}=""") }
             .flatMap { it.value }
-            .flatMap { regex -> regex.findAll(maskedMessage).map { it.groups[3]!!.range } }
+            .flatMap { regex ->
+                val matcher = regex.matcher(maskedMessage)
+                val ranges= mutableListOf<IntRange>()
+                while (matcher.find()) {
+                    val groupStart = matcher.start(3)
+                    val groupEnd = matcher.end(3)-1
+                    ranges.add(groupStart..groupEnd)
+                }
+                ranges}
             .sortedBy { it.last * -1 }
             .toList()
         ranges

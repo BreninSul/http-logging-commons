@@ -37,7 +37,7 @@ val kotlinVersion = "2.0.0"
 val javaVersion = JavaVersion.VERSION_17
 
 group = "io.github.breninsul"
-version = "2.0.9"
+version = "2.1.0"
 
 java {
     sourceCompatibility = javaVersion
@@ -58,6 +58,11 @@ tasks.compileKotlin {
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
+    api("com.google.re2j:re2j:1.8")
+}
+tasks.test {
+    minHeapSize = "512m" // Minimum heap size
+    maxHeapSize = "2g" // Maximum heap size
 }
 val javadocJar =
     tasks.named<Jar>("javadocJar") {
